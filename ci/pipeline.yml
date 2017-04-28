@@ -1,0 +1,168 @@
+groups:
+- name: shipit
+  jobs:
+  - patch
+  - minor
+  - major
+  - shipit
+
+jobs:
+- name: patch
+  serial: true
+  plan:
+  - do:
+    - aggregate:
+        - { get: git, trigger: false }
+        - { get: version, trigger: false, params: {bump: patch} }
+    - put: version
+      params: {file: version/number}
+    on_failure:
+      put: notify
+      params:
+        channel: {{slack-channel}}
+        username: {{slack-user}}
+        icon_url: {{slack-icon}}
+        text: {{slack-text}}
+
+- name: minor
+  serial: true
+  plan:
+  - do:
+    - aggregate:
+        - { get: git, trigger: false }
+        - { get: version, trigger: false, params: {bump: minor} }
+    - put: version
+      params: {file: version/number}
+    on_failure:
+      put: notify
+      params:
+        channel: {{slack-channel}}
+        username: {{slack-user}}
+        icon_url: {{slack-icon}}
+        text: {{slack-text}}
+
+- name: major
+  serial: true
+  plan:
+  - do:
+    - aggregate:
+        - { get: git, trigger: false }
+        - { get: version, trigger: false, params: {bump: major} }
+    - put: version
+      params: {file: version/number}
+    on_failure:
+      put: notify
+      params:
+        channel: {{slack-channel}}
+        username: {{slack-user}}
+        icon_url: {{slack-icon}}
+        text: {{slack-text}}
+
+- name: shipit
+  serial: true
+  plan:
+  - do:
+    - name: inputs
+      aggregate:
+        - { get: version, params: {bump: final}, trigger: true }
+        - { get: git }
+    - name: release
+      task: release
+      config:
+        image: docker:///andreikrasnitski/logsearch-ci
+        platform: linux
+        inputs:
+          - name: version
+          - name: git
+        outputs:
+          - name: gh
+          - name: pushme
+        run:
+          path: ./git/ci/scripts/shipit
+          args: []
+        params:
+          REPO_ROOT: git
+          VERSION_FROM: version/number
+          RELEASE_NAME: {{release-name}}
+          RELEASE_ROOT: gh
+          REPO_OUT: pushme
+          GIT_EMAIL: {{git-email}}
+          BRANCH: {{git-branch}}
+          BOSH_LITE_TARGET: {{bosh-lite-target}}
+          BOSH_LITE_USERNAME: {{bosh-lite-username}}
+          BOSH_LITE_PASSWORD: {{bosh-lite-password}}
+          AWS_ACCESS_KEY: {{aws-access-key}}
+          AWS_SECRET_KEY: {{aws-secret-access-key}}
+    - name: upload-git
+      put: git
+      params:
+        rebase: true
+        repository: pushme/git
+    - name: tarball
+      put: s3
+      params:
+        file:  {{tarball-file}}
+    - name: github-release
+      put: github
+      params:
+        name: gh/name
+        tag: gh/tag
+        globs: [gh/artifacts/*]
+    on_failure:
+      put: notify
+      params:
+        channel:  {{slack-channel}}
+        username: {{slack-user}}
+        icon_url: {{slack-icon}}
+        text:     {{slack-text}}
+    on_success:
+      put: notify
+      params:
+        channel:  {{slack-channel}}
+        username: {{slack-user}}
+        icon_url: {{slack-icon}}
+        text_file: gh/notification
+
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
+resources:
+- name: git
+  type: git
+  source:
+    uri: {{git-uri}}
+    branch: {{git-branch}}
+    private_key: {{git-private-key}}
+
+- name: version
+  type: semver
+  source :
+    driver: s3
+    bucket: {{aws-bucket}}
+    key: version
+    access_key_id: {{aws-access-key}}
+    secret_access_key: {{aws-secret-access-key}}
+    initial_version: {{initial-version}}
+
+- name: notify
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+- name: github
+  type: github-release
+  source:
+    user: {{git-user}}
+    repository: {{git-repo}}
+    access_token: {{git-token}}
+
+- name: s3
+  type: s3
+  source:
+    bucket: {{aws-bucket}}
+    regexp: {{s3-regexp}}
+    access_key_id: {{aws-access-key}}
+    secret_access_key: {{aws-secret-access-key}}

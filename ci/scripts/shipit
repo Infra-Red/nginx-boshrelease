@@ -1,0 +1,63 @@
+#!/usr/bin/dumb-init /bin/bash
+
+set -e
+
+if [[ -z ${VERSION_FROM} ]]; then
+  echo >&2 "VERSION_FROM environment variable not set, or empty.  Did you misconfigure Concourse?"
+  exit 2
+fi
+if [[ ! -f ${VERSION_FROM} ]]; then
+  echo >&2 "Version file (${VERSION_FROM}) not found.  Did you misconfigure Concourse?"
+  exit 2
+fi
+VERSION=$(cat ${VERSION_FROM})
+if [[ -z ${VERSION} ]]; then
+  echo >&2 "Version file (${VERSION_FROM}) was empty.  Did you misconfigure Concourse?"
+  exit 2
+fi
+
+cat > ~/.bosh_config << EOF
+---
+aliases:
+  target:
+    bosh-lite: ${BOSH_LITE_TARGET}
+auth:
+  ${BOSH_LITE_TARGET}:
+    username: ${BOSH_LITE_USERNAME}
+    password: ${BOSH_LITE_PASSWORD}
+EOF
+cat > ${REPO_ROOT}/config/private.yml << EOF
+---
+blobstore:
+  s3:
+    access_key_id: ${AWS_ACCESS_KEY}
+    secret_access_key: ${AWS_SECRET_KEY}
+EOF
+bosh target ${BOSH_LITE_TARGET}
+(cd ${REPO_ROOT}
+ bosh -n create release --final --with-tarball --version "${VERSION}")
+
+mkdir -p ${RELEASE_ROOT}/artifacts
+echo "v${VERSION}" > ${RELEASE_ROOT}/tag
+echo "v${VERSION}" > ${RELEASE_ROOT}/name
+cp ${REPO_ROOT}/releases/*/*-${VERSION}.tgz ${RELEASE_ROOT}/artifacts
+
+cat > ${RELEASE_ROOT}/notification <<EOF
+<!here> New ${RELEASE_NAME} v${VERSION} released!
+EOF
+
+if [[ -z $(git config --global user.email) ]]; then
+  git config --global user.email "${GIT_EMAIL}"
+fi
+if [[ -z $(git config --global user.name) ]]; then
+  git config --global user.name "CI BOT"
+fi
+
+(cd ${REPO_ROOT}
+ git merge --no-edit ${BRANCH}
+ git add -A
+ git status
+ git commit -m "Final release v${VERSION}")
+
+# so that future steps in the pipeline can push our changes
+cp -a ${REPO_ROOT} ${REPO_OUT}
