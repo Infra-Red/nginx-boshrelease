@@ -1,0 +1,40 @@
+daemon off;
+
+error_log /var/vcap/sys/log/nginx/error.log;
+pid       /var/vcap/sys/run/nginx/nginx.pid;
+
+events {
+  worker_connections 8192;
+}
+
+<% atc = link('atc') %>
+
+stream {
+  server {
+    listen 80;
+    proxy_pass http;
+  }
+  upstream http {
+  <% atc.instances.each do |instance| %>
+    server <%= instance.address %>:8080 max_fails=3 fail_timeout=15;
+  <% end %>
+  }
+  server {
+    listen 443;
+    proxy_pass https;
+  }
+  upstream https {
+  <% atc.instances.each do |instance| %>
+    server <%= instance.address %>:4443 max_fails=3 fail_timeout=15;
+  <% end %>
+  }
+  server {
+    listen 2222;
+    proxy_pass ssh;
+  }
+  upstream ssh {
+  <% atc.instances.each do |instance| %>
+    server <%= instance.address %>:2222 max_fails=3 fail_timeout=15;
+  <% end %>
+  }
+}

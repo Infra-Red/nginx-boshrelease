@@ -1,0 +1,20 @@
+---
+name: nginx
+
+packages:
+- nginx
+
+consumes:
+- name: atc
+  type: atc
+
+templates:
+  bin/nginx_ctl.erb: bin/nginx_ctl
+  config/nginx.conf.erb: config/nginx.conf
+  helpers/cpu_utils.sh: helpers/cpu_utils.sh
+  helpers/pid_utils.sh: helpers/pid_utils.sh
+
+properties:
+  nginx.nginx_workers_per_core:
+    description: "Number of NGINX worker processes per CPU core"
+    default: 2
