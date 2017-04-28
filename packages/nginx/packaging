@@ -1,0 +1,24 @@
+set -e -x
+
+tar xzf nginx/pcre-8.40.tar.gz
+
+tar xzf nginx/headers-more-nginx-module-0.32.tar.gz
+
+tar xzf nginx/nginx-1.13.0.tar.gz
+
+pushd nginx-1.13.0
+  ./configure \
+    --with-ipv6 \
+    --with-debug \
+    --prefix=${BOSH_INSTALL_TARGET} \
+    --with-pcre=../pcre-8.40 \
+    --add-module=../headers-more-nginx-module-0.32 \
+    --with-http_ssl_module \
+    --with-http_dav_module \
+    --with-http_realip_module \
+    --with-http_gunzip_module \
+    --with-http_v2_module \
+    --with-stream
+  make
+  make install
+popd

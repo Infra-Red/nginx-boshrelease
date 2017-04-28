@@ -1,0 +1,7 @@
+---
+name: nginx
+
+files:
+- nginx/headers-more-nginx-module-0.32.tar.gz
+- nginx/nginx-1.13.0.tar.gz
+- nginx/pcre-8.40.tar.gz
