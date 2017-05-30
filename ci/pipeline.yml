@@ -69,7 +69,10 @@ jobs:
     - name: release
       task: release
       config:
-        image: docker:///andreikrasnitski/logsearch-ci
+        image_resource:
+          type: docker-image
+          source:
+            repository: andreikrasnitski/logsearch-ci
         platform: linux
         inputs:
           - name: version

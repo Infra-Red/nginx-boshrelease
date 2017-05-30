@@ -33,7 +33,6 @@ blobstore:
     access_key_id: ${AWS_ACCESS_KEY}
     secret_access_key: ${AWS_SECRET_KEY}
 EOF
-bosh target ${BOSH_LITE_TARGET}
 (cd ${REPO_ROOT}
  bosh -n create release --final --with-tarball --version "${VERSION}")
 
