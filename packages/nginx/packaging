@@ -4,9 +4,9 @@ tar xzf nginx/pcre-8.40.tar.gz
 
 tar xzf nginx/headers-more-nginx-module-0.32.tar.gz
 
-tar xzf nginx/nginx-1.13.2.tar.gz
+tar xzf nginx/nginx-1.13.3.tar.gz
 
-pushd nginx-1.13.2
+pushd nginx-1.13.3
   ./configure \
     --with-ipv6 \
     --with-debug \
