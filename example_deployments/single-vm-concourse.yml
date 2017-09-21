@@ -1,0 +1,91 @@
+---
+name: concourse
+
+releases:
+- name: concourse
+  version: "3.4.1"
+  url: https://bosh.io/d/github.com/concourse/concourse?v=3.4.1
+  sha1: b9c3cd85caccf0dae7406f8d7dfc237b4c698ce6
+- name: garden-runc
+  version: "1.6.0"
+  url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
+  sha1: 58fbc64aff303e6d76899441241dd5dacef50cb7
+#- name: postgres
+#  version: "20"
+#  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=20
+#  sha1: 3f378bcab294e20316171d4e656636df88763664
+- name: nginx
+  version: 1.0.6
+  url: https://github.com/Infra-Red/nginx-boshrelease/releases/download/v1.0.6/nginx-1.0.6.tgz
+  sha1: 5c2e2bc2343a88ba4bd68bc8656442ba4f30367f
+
+variables:
+- name: concourse_admin_password
+  type: password
+
+instance_groups:
+- name: concourse
+  instances: 1
+  networks:
+  - name: vip
+    static_ips: [((concourse_static_vip))]
+  - name: default
+    default: [gateway, dns]
+  persistent_disk: 10240
+  stemcell: default
+  vm_type: medium
+  azs:
+  - z1
+  jobs:
+  - release: concourse
+    name: atc
+    properties:
+      basic_auth_username: concourse
+      basic_auth_password: "((concourse_admin_password))"
+      external_url: ((concourse_external_url))
+      postgresql_database: &atc_db atc
+      tls_cert: ((tls_cert))
+      tls_key:  ((tls_key))
+  - release: concourse
+    name: tsa
+
+  - release: concourse
+    name: postgresql
+    properties:
+      databases:
+      - name: *atc_db
+        role: atc
+        password: dummy-password
+
+  - release: concourse
+    name: groundcrew
+    properties: {drain_timeout: 10m}
+
+  - name: nginx
+    release: nginx
+    properties:
+      nginx:
+        enable_tsa_listener: false
+
+  - release: concourse
+    name: baggageclaim
+
+  - release: garden-runc
+    name: garden
+    properties:
+      garden:
+        listen_network: tcp
+        listen_address: 0.0.0.0:7777
+        allow_host_access: true
+
+stemcells:
+- alias: default
+  os: ubuntu-trusty
+  version: latest
+
+update:
+  canaries: 1
+  max_in_flight: 3
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000
