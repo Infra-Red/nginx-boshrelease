@@ -28,6 +28,7 @@ stream {
     server <%= instance.address %>:4443 max_fails=3 fail_timeout=15;
   <% end %>
   }
+  <% if p("nginx.enable_tsa_listener") %>
   server {
     listen 2222;
     proxy_pass ssh;
@@ -37,4 +38,5 @@ stream {
     server <%= instance.address %>:2222 max_fails=3 fail_timeout=15;
   <% end %>
   }
+  <% end %>
 }

@@ -18,3 +18,6 @@ properties:
   nginx.nginx_workers_per_core:
     description: "Number of NGINX worker processes per CPU core"
     default: 2
+  nginx.enable_tsa_listener:
+    description: "Allows to disable 2222 port listener, useful for Single VM deployment"
+    default: true
