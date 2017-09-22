@@ -3,23 +3,25 @@ name: concourse
 
 releases:
 - name: concourse
-  version: "3.4.1"
-  url: https://bosh.io/d/github.com/concourse/concourse?v=3.4.1
-  sha1: b9c3cd85caccf0dae7406f8d7dfc237b4c698ce6
+  version: 3.5.0
+  url: https://bosh.io/d/github.com/concourse/concourse?v=3.5.0
+  sha1: 65a974b3831bb9908661a5ffffbe456e10185149
 - name: garden-runc
-  version: "1.6.0"
+  version: 1.6.0
   url: https://bosh.io/d/github.com/cloudfoundry/garden-runc-release?v=1.6.0
   sha1: 58fbc64aff303e6d76899441241dd5dacef50cb7
-#- name: postgres
-#  version: "20"
-#  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=20
-#  sha1: 3f378bcab294e20316171d4e656636df88763664
+- name: postgres
+  version: 20
+  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=20
+  sha1: 3f378bcab294e20316171d4e656636df88763664
 - name: nginx
   version: 1.0.6
   url: https://github.com/Infra-Red/nginx-boshrelease/releases/download/v1.0.6/nginx-1.0.6.tgz
   sha1: 5c2e2bc2343a88ba4bd68bc8656442ba4f30367f
 
 variables:
+- name: atc_db_password
+  type: password
 - name: concourse_admin_password
   type: password
 
@@ -43,7 +45,11 @@ instance_groups:
       basic_auth_username: concourse
       basic_auth_password: "((concourse_admin_password))"
       external_url: ((concourse_external_url))
-      postgresql_database: &atc_db atc
+      postgresql:
+        database: atc
+        role:
+          name: atc
+          password: ((atc_db_password))
       tls_cert: ((tls_cert))
       tls_key:  ((tls_key))
   - release: concourse
@@ -53,9 +59,12 @@ instance_groups:
     name: postgresql
     properties:
       databases:
-      - name: *atc_db
-        role: atc
-        password: dummy-password
+        port: 5432
+        databases:
+        - name: atc
+        roles:
+        - name: atc
+          password: ((atc_db_password))
 
   - release: concourse
     name: groundcrew
