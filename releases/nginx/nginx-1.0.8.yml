@@ -1,0 +1,29 @@
+---
+packages:
+- name: nginx
+  version: !binary |-
+    MWJiYjIxOWUyODI4ZWU1OWFkM2QwZGYyYTBiZWU3MDkxZTg1MGU2ZA==
+  fingerprint: !binary |-
+    MWJiYjIxOWUyODI4ZWU1OWFkM2QwZGYyYTBiZWU3MDkxZTg1MGU2ZA==
+  sha1: !binary |-
+    MTg1ODQ1MjA1MTI1ZDA2NGE3MTNhOWM0MmQzMzAzYmEzMTFjMTUyMw==
+  dependencies: []
+jobs:
+- name: nginx
+  version: !binary |-
+    ODEzN2I1MmNlZWEwOTk0NzZjMjNjMzZiNWI3Yzc1OWYxMTI1M2I4NA==
+  fingerprint: !binary |-
+    ODEzN2I1MmNlZWEwOTk0NzZjMjNjMzZiNWI3Yzc1OWYxMTI1M2I4NA==
+  sha1: !binary |-
+    ZTE5YWJhYzVlMDFmNTEyOTgxODFmM2JkOTMxMmQxODg4NWM1NzE5YQ==
+license:
+  version: !binary |-
+    YzE4M2IxYjgxMjNiYjI2OGE4MTgzMDRjMjNlMmRjZjM3ZmZkMmVlYw==
+  fingerprint: !binary |-
+    YzE4M2IxYjgxMjNiYjI2OGE4MTgzMDRjMjNlMmRjZjM3ZmZkMmVlYw==
+  sha1: !binary |-
+    NDE0NWIwYzU5YjExZDBjM2QxYzMwZmFkYjBmMmZjYzdmZmFiZjAxOQ==
+commit_hash: 169829cf
+uncommitted_changes: true
+name: nginx
+version: 1.0.8
