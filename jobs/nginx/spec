@@ -18,6 +18,9 @@ properties:
   nginx.nginx_workers_per_core:
     description: "Number of NGINX worker processes per CPU core"
     default: 2
+  nginx.worker_connections:
+    description: "Sets the maximum number of simultaneous connections that can be opened by a worker process"
+    default: 8192
   nginx.enable_tsa_listener:
     description: "Allows to disable 2222 port listener, useful for Single VM deployment"
     default: true

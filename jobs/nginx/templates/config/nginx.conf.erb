@@ -4,7 +4,7 @@ error_log /var/vcap/sys/log/nginx/error.log;
 pid       /var/vcap/sys/run/nginx/nginx.pid;
 
 events {
-  worker_connections 8192;
+  worker_connections <%= p("nginx.worker_connections") %>;
 }
 
 <% atc = link('atc') %>
