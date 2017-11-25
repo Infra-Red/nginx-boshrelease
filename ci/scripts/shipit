@@ -16,6 +16,8 @@ if [[ -z ${VERSION} ]]; then
   exit 2
 fi
 
+root_dir=$(pwd)
+
 cat > ~/.bosh_config << EOF
 ---
 aliases:
@@ -36,7 +38,7 @@ blobstore:
 EOF
 mkdir -p ${RELEASE_ROOT}/artifacts
 (cd ${REPO_ROOT}
- bosh2 -n cr --final --tarball=${RELEASE_ROOT}/artifacts/nginx-${VERSION}.tgz --version=${VERSION})
+ bosh2 -n cr --final --tarball=${root_dir}/${RELEASE_ROOT}/artifacts/nginx-${VERSION}.tgz --version=${VERSION})
 
 echo "v${VERSION}" > ${RELEASE_ROOT}/tag
 echo "v${VERSION}" > ${RELEASE_ROOT}/name
