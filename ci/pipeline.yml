@@ -72,7 +72,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: andreikrasnitski/logsearch-ci
+            repository: andreikrasnitski/ci
         platform: linux
         inputs:
           - name: version

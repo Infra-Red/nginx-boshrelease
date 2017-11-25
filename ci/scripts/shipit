@@ -1,4 +1,4 @@
-#!/usr/bin/dumb-init /bin/bash
+#!/usr/local/bin/dumb-init /bin/bash
 
 set -e
 
@@ -29,17 +29,17 @@ EOF
 cat > ${REPO_ROOT}/config/private.yml << EOF
 ---
 blobstore:
-  s3:
+  provider: s3
+  options:
     access_key_id: ${AWS_ACCESS_KEY}
     secret_access_key: ${AWS_SECRET_KEY}
 EOF
-(cd ${REPO_ROOT}
- bosh -n create release --final --with-tarball --version "${VERSION}")
-
 mkdir -p ${RELEASE_ROOT}/artifacts
+(cd ${REPO_ROOT}
+ bosh2 -n cr --final --tarball=${RELEASE_ROOT}/artifacts/nginx-${VERSION}.tgz --version=${VERSION})
+
 echo "v${VERSION}" > ${RELEASE_ROOT}/tag
 echo "v${VERSION}" > ${RELEASE_ROOT}/name
-cp ${REPO_ROOT}/releases/*/*-${VERSION}.tgz ${RELEASE_ROOT}/artifacts
 cat > ${RELEASE_ROOT}/body << EOF
 ### Deployment
 \`\`\`yaml
@@ -47,7 +47,7 @@ releases:
 - name: nginx
   version: ${VERSION}
   url: https://github.com/Infra-Red/nginx-boshrelease/releases/download/v${VERSION}/nginx-${VERSION}.tgz
-  sha1: $(shasum -a 1 ${REPO_ROOT}/releases/*/*-${VERSION}.tgz | cut -d " " -f1)
+  sha1: $(sha1sum ${RELEASE_ROOT}/artifacts/*-${VERSION}.tgz | cut -d " " -f1)
 \`\`\`
 EOF
 
